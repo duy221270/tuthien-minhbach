@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Charity Blockchain</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Ethers.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.0/ethers.umd.min.js"></script>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="card">
+            <h1> Gây Quỹ Từ Thiện Blockchain</h1>
+
+            <button id="connectBtn" class="btn connect"> Kết nối MetaMask</button>
+            <p id="walletAddress" class="wallet">Chưa kết nối ví</p>
+
+            <div class="divider"></div>
+
+            <h3> Donate Ethereum</h3>
+            <input type="number" id="amount" placeholder="Nhập số ETH">
+
+            <button id="donateBtn" class="btn donate"> Donate ngay</button>
+
+            <p id="status" class="status"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
