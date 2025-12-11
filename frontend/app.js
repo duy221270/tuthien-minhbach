@@ -1,61 +1,134 @@
 let currentAccount = null;
+// ĐỊA CHỈ CONTRACT CỦA BẠN (Giữ nguyên cái cũ của bạn)
+const contractAddress = "0x23EBfE34AFbc03548a7e3CE287F3E313c17C57c8";
 
-window.addEventListener("DOMContentLoaded", () => {
+// ABI đầy đủ để đọc Event và Owner
+const abi = [
+    "function donate() public payable",
+    "function withdraw(uint amount) public",
+    "function getBalance() public view returns (uint)",
+    "function owner() public view returns (address)", // Hàm xem ai là chủ
+    "event DonationReceived(address indexed donor, uint amount)", // Sự kiện
+    "event Withdraw(address indexed admin, uint amount)"
+];
+
+window.addEventListener("DOMContentLoaded", async () => {
     const connectBtn = document.getElementById("connectBtn");
     const walletAddress = document.getElementById("walletAddress");
     const donateBtn = document.getElementById("donateBtn");
+    const btnWithdraw = document.getElementById("btnWithdraw");
     const status = document.getElementById("status");
+    const historyBody = document.getElementById("historyBody");
+    const adminPanel = document.querySelector(".card-admin"); // Lấy thẻ Admin
 
-    // --- KẾT NỐI METAMASK ---
+    // --- 1. KẾT NỐI VÍ & KIỂM TRA ADMIN ---
     connectBtn.onclick = async () => {
         if (typeof window.ethereum !== "undefined") {
             try {
-                const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 currentAccount = accounts[0];
-                walletAddress.textContent = `Ví: ${currentAccount}`;
+                walletAddress.innerText = `Ví: ${currentAccount.substring(0, 6)}...${currentAccount.slice(-4)}`;
+                
+                await checkAdmin(); // Kiểm tra xem ví này có phải chủ không
+                await getHistory(); // Tải lịch sử ngay khi kết nối
+                
             } catch (error) {
-                alert("Bạn chưa cho phép kết nối MetaMask!");
+                console.error(error);
             }
         } else {
-            alert("Bạn chưa cài MetaMask!");
+            alert("Cài MetaMask đi bạn!");
         }
     };
 
-    // --- DONATE ETH QUA Ethers.js ---
-    donateBtn.onclick = async () => {
-        const ethAmount = document.getElementById("amount").value;
-
-        if (!currentAccount) {
-            status.textContent = "⚠ Vui lòng kết nối ví!";
-            return;
-        }
-        if (!ethAmount || ethAmount <= 0) {
-            status.textContent = "⚠ Nhập số ETH hợp lệ!";
-            return;
-        }
-
+    // --- 2. HÀM KIỂM TRA QUYỀN ADMIN (An toàn) ---
+    async function checkAdmin() {
         try {
-            // Provider Ethers.js
             const provider = new ethers.BrowserProvider(window.ethereum);
-
-            // Lấy người ký giao dịch (signer)
-            const signer = await provider.getSigner();
-
-            // ĐỊA CHỈ VÍ NHẬN TIỀN TỪ THIỆN
-            const toAddress = "0x0000000000000000000000000000000000000000"; 
-            // ⚠ Bạn thay địa chỉ ví nhận tiền vào đây
-
-            // Tạo giao dịch
-            const tx = await signer.sendTransaction({
-                to: toAddress,
-                value: ethers.parseEther(ethAmount)
-            });
-
-            status.textContent = " Donate thành công! TX Hash: " + tx.hash;
-
+            const contract = new ethers.Contract(contractAddress, abi, provider);
+            
+            const ownerAddress = await contract.owner();
+            
+            // So sánh ví đang kết nối với ví chủ contract (chuyển về chữ thường để so sánh chính xác)
+            if (currentAccount.toLowerCase() === ownerAddress.toLowerCase()) {
+                adminPanel.style.display = "block"; // Hiện bảng Admin
+                console.log("Chào mừng Admin quay lại!");
+            } else {
+                adminPanel.style.display = "none"; // Ẩn đi nếu là khách
+            }
         } catch (err) {
-            console.log(err);
-            status.textContent = " Lỗi khi gửi donate!";
+            console.error("Lỗi check admin:", err);
+        }
+    }
+
+    // --- 3. HÀM LẤY LỊCH SỬ (Minh bạch) ---
+    async function getHistory() {
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const contract = new ethers.Contract(contractAddress, abi, provider);
+            
+            // Lấy toàn bộ sự kiện DonationReceived từ quá khứ đến nay
+            const filter = contract.filters.DonationReceived();
+            const events = await contract.queryFilter(filter);
+            
+            historyBody.innerHTML = ""; // Xóa dòng "Đang tải..."
+            
+            // Duyệt ngược từ mới nhất về cũ nhất
+            events.reverse().forEach(event => {
+                const donor = event.args[0];
+                const amount = ethers.formatEther(event.args[1]);
+                
+                // Cắt ngắn địa chỉ cho đẹp
+                const shortDonor = `${donor.substring(0, 6)}...${donor.slice(-4)}`;
+                
+                const row = `<tr>
+                    <td>${shortDonor}</td>
+                    <td style="color: #4CAF50; font-weight:bold;">+${amount} ETH</td>
+                </tr>`;
+                historyBody.innerHTML += row;
+            });
+            
+        } catch (err) {
+            console.error("Lỗi tải lịch sử:", err);
+            historyBody.innerHTML = "<tr><td colspan='2'>Chưa có dữ liệu</td></tr>";
+        }
+    }
+
+    // --- 4. CHỨC NĂNG DONATE ---
+    donateBtn.onclick = async () => {
+        const amount = document.getElementById("amount").value;
+        if (!currentAccount) return alert("Kết nối ví trước!");
+        
+        try {
+            status.innerText = "⏳ Đang xử lý...";
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, abi, signer);
+
+            const tx = await contract.donate({ value: ethers.parseEther(amount) });
+            await tx.wait();
+
+            status.innerText = "🎉 Thành công!";
+            getHistory(); // Tải lại bảng lịch sử ngay lập tức
+            
+        } catch (err) {
+            console.error(err);
+            status.innerText = "❌ Lỗi: " + err.message;
+        }
+    };
+
+    // --- 5. CHỨC NĂNG RÚT TIỀN ---
+    btnWithdraw.onclick = async () => {
+        const amount = document.getElementById("withdrawAmount").value;
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, abi, signer);
+
+            const tx = await contract.withdraw(ethers.parseEther(amount));
+            await tx.wait();
+            alert("Rút tiền thành công!");
+        } catch (err) {
+            alert("Lỗi rút tiền!");
         }
     };
 });

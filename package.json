@@ -19,5 +19,8 @@
   "homepage": "https://github.com/duy221270/tuthien-minhbach#readme",
   "dependencies": {
     "ethers": "^6.16.0"
+  },
+  "devDependencies": {
+    "hardhat": "^3.0.17"
   }
 }

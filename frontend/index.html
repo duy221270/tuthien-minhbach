@@ -1,35 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Charity Blockchain</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Ethers.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.0/ethers.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity Blockchain DApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="card">
-            <h1> Gây Quỹ Từ Thiện Blockchain</h1>
+    <div class="main-container">
+        <header>
+            <h1>🌟 Quỹ Từ Thiện Blockchain Minh Bạch</h1>
+            <p>Kết nối tấm lòng vàng - Minh bạch tuyệt đối trên Sepolia Network</p>
+        </header>
 
-            <button id="connectBtn" class="btn connect"> Kết nối MetaMask</button>
-            <p id="walletAddress" class="wallet">Chưa kết nối ví</p>
+        <div class="wallet-section">
+            <button id="connectBtn" class="btn-connect">🦊 Kết nối MetaMask</button>
+            <p id="walletAddress" class="wallet-info">Chưa kết nối ví</p>
+        </div>
 
-            <div class="divider"></div>
+        <div class="content-grid">
+            <div class="card card-donor">
+                <div class="card-header">
+                    <h3>❤️ Khu vực Quyên Góp</h3>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label>Số tiền muốn đóng góp (ETH)</label>
+                        <input type="number" id="amount" placeholder="VD: 0.001">
+                    </div>
+                    <button id="donateBtn" class="btn-primary">Quyên góp ngay</button>
+                    
+                    <div class="info-box">
+                        <p>💰 Quỹ hiện có: <span id="fundBalance" class="highlight">0.0</span> ETH</p>
+                        <button id="btnCheckBalance" class="btn-small">🔄 Cập nhật</button>
+                    </div>
+                    <p id="status" class="status-text"></p>
+                </div>
+            </div>
 
-            <h3> Donate Ethereum</h3>
-            <input type="number" id="amount" placeholder="Nhập số ETH">
-
-            <button id="donateBtn" class="btn donate"> Donate ngay</button>
-
-            <p id="status" class="status"></p>
+            <div class="card card-admin">
+                <div class="card-header admin-header">
+                    <h3>👮‍♂️ Khu vực Admin</h3>
+                </div>
+                <div class="card-body">
+                    <p class="note">Chỉ chủ quỹ mới có quyền rút tiền.</p>
+                    <div class="input-group">
+                        <label>Số tiền cần rút (ETH)</label>
+                        <input type="text" id="withdrawAmount" placeholder="VD: 0.001">
+                    </div>
+                    <button id="btnWithdraw" class="btn-danger">💸 Rút tiền về ví</button>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="history-section">
+    <h4>📜 Lịch sử các nhà hảo tâm</h4>
+    <div class="table-container">
+        <table id="donationTable">
+            <thead>
+                <tr>
+                    <th>Người gửi</th>
+                    <th>Số tiền (ETH)</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                <tr><td colspan="2">Đang tải dữ liệu blockchain...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <script src="app.js"></script>
 </body>

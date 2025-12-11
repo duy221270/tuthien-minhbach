@@ -1,97 +1,248 @@
-/* Font */
+/* --- CÀI ĐẶT CHUNG --- */
 * {
-    font-family: 'Poppins', sans-serif;
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Nền gradient */
 body {
-    margin: 0;
-    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-    height: 100vh;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Nền xám trắng hiện đại */
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    padding: 40px 20px;
+    color: #333;
 }
 
-/* Khung chính kiểu Glass */
+.main-container {
+    width: 100%;
+    max-width: 900px; /* Giới hạn chiều rộng để web gọn gàng */
+}
+
+/* --- HEADER --- */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.2rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+/* --- VÍ METAMASK --- */
+.wallet-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.btn-connect {
+    background: linear-gradient(90deg, #FF9800, #F44336);
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+    transition: transform 0.2s;
+}
+
+.btn-connect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+}
+
+.wallet-info {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: monospace;
+    background: #fff;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+/* --- BỐ CỤC LƯỚI (GRID) --- */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia đôi màn hình */
+    gap: 30px;
+}
+
+/* Nếu màn hình nhỏ (điện thoại) thì xếp chồng lên nhau */
+@media (max-width: 768px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- CARD STYLE (KHUNG) --- */
 .card {
-    width: 90%;
-    max-width: 420px;
-    padding: 25px;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: white;
     border-radius: 20px;
-    box-shadow: 0px 4px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Hiệu ứng nổi lên khi di chuột */
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
     text-align: center;
 }
 
-/* Tiêu đề */
-.card h1 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 18px;
-    color: #fff;
+.card-header h3 {
+    margin: 0;
+    color: #333;
 }
 
-/* Input */
+.card-donor .card-header { background: #E3F2FD; color: #1565C0; }
+.card-admin .card-header { background: #FFEBEE; color: #C62828; }
+
+.card-body {
+    padding: 30px;
+}
+
+/* --- INPUT & LABEL --- */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #555;
+}
+
 input {
     width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    margin-top: 10px;
-    font-size: 15px;
+    padding: 12px 15px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border 0.3s;
+    outline: none;
 }
 
-/* Buttons */
-.btn {
+input:focus {
+    border-color: #2196F3;
+}
+
+/* --- CÁC LOẠI NÚT BẤM --- */
+button {
     width: 100%;
-    padding: 12px;
-    margin-top: 12px;
+    padding: 14px;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
+    font-weight: 700;
     cursor: pointer;
-    font-size: 16px;
-    color: #fff;
-    transition: 0.2s;
+    font-size: 1rem;
+    transition: all 0.3s;
 }
 
-.connect {
-    background-color: #5B8CF6;
+.btn-primary {
+    background: #2196F3;
+    color: white;
+}
+.btn-primary:hover { background: #1976D2; }
+
+.btn-danger {
+    background: #FF5722;
+    color: white;
+}
+.btn-danger:hover { background: #E64A19; }
+
+.btn-small {
+    width: auto;
+    padding: 8px 15px;
+    background: #eee;
+    color: #333;
+    margin-left: 10px;
+    font-size: 0.8rem;
+}
+.btn-small:hover { background: #ddd; }
+
+/* --- KHU VỰC THÔNG TIN SỐ DƯ --- */
+.info-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.connect:hover {
-    background-color: #3b6fe0;
+.highlight {
+    color: #2196F3;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
-.donate {
-    background-color: #ff7077;
+.note {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 15px;
+    font-style: italic;
 }
 
-.donate:hover {
-    background-color: #ff494f;
-}
-
-/* Thông tin ví */
-.wallet {
-    margin-top: 10px;
-    color: #fff;
-    font-size: 14px;
-}
-
-/* Divider kẻ nhẹ */
-.divider {
-    width: 100%;
-    height: 1px;
-    background: #ffffff60;
-    margin: 20px 0;
-}
-
-/* Status */
-.status {
+.status-text {
     margin-top: 15px;
-    font-size: 14px;
-    color: #fff;
+    font-size: 0.9rem;
+    text-align: center;
+    color: #666;
+}
+/* Thêm vào cuối file style.css */
+.history-section {
+    margin-top: 25px;
+    border-top: 2px dashed #eee;
+    padding-top: 15px;
+}
+.history-section h4 {
+    margin-bottom: 15px;
+    color: #555;
+    text-align: center;
+}
+.table-container {
+    max-height: 200px; /* Tạo thanh cuộn nếu danh sách dài */
+    overflow-y: auto;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+th {
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: left;
+    color: #666;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+td {
+    padding: 10px;
+    border-bottom: 1px solid #f1f1f1;
+    color: #333;
+}
+/* Ẩn admin panel mặc định để bảo mật */
+.card-admin {
+    display: none; 
 }
