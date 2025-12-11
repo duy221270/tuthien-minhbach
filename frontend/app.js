@@ -1,5 +1,5 @@
 let currentAccount = null;
-// ĐỊA CHỈ CONTRACT CỦA BẠN (Đã cập nhật đúng địa chỉ bạn gửi)
+// ĐỊA CHỈ CONTRACT CỦA BẠN (Giữ nguyên)
 const contractAddress = "0x23EBfE34AFbc03548a7e3CE287F3E313c17C57c8";
 
 const abi = [
@@ -19,8 +19,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     const status = document.getElementById("status");
     const historyBody = document.getElementById("historyBody");
     const adminPanel = document.querySelector(".card-admin");
-    
-    // [MỚI] Lấy thẻ hiển thị số dư
     const fundBalance = document.getElementById("fundBalance"); 
     const btnCheckBalance = document.getElementById("btnCheckBalance");
 
@@ -30,11 +28,11 @@ window.addEventListener("DOMContentLoaded", async () => {
             try {
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 currentAccount = accounts[0];
-                walletAddress.innerText = `Ví: ${currentAccount.substring(0, 6)}...${currentAccount.slice(-4)}`;
+                walletAddress.innerText = `Ví: ${currentAccount}`; // Hiện full địa chỉ
                 
                 await checkAdmin(); 
                 await getHistory(); 
-                await getFundBalance(); // [MỚI] Lấy số dư ngay khi kết nối
+                await getFundBalance();
                 
             } catch (error) {
                 console.error(error);
@@ -44,32 +42,20 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // --- [QUAN TRỌNG] HÀM CẬP NHẬT SỐ DƯ QUỸ (Code bị thiếu lúc nãy) ---
+    // --- HÀM CẬP NHẬT SỐ DƯ QUỸ ---
     async function getFundBalance() {
         try {
-            // Dùng provider để đọc dữ liệu blockchain
             const provider = new ethers.BrowserProvider(window.ethereum);
-            
-            // Lấy số dư của Contract
             const balanceWei = await provider.getBalance(contractAddress);
             const balanceEth = ethers.formatEther(balanceWei);
-            
-            // Hiển thị lên web
-            if (fundBalance) {
-                fundBalance.innerText = balanceEth;
-            }
-            console.log("Đã cập nhật số dư:", balanceEth);
+            if (fundBalance) fundBalance.innerText = balanceEth;
         } catch (err) {
             console.error("Lỗi lấy số dư:", err);
         }
     }
+    if (btnCheckBalance) btnCheckBalance.onclick = getFundBalance;
 
-    // Nếu có nút "Cập nhật" thì gán sự kiện click cho nó
-    if (btnCheckBalance) {
-        btnCheckBalance.onclick = getFundBalance;
-    }
-
-    // --- 2. HÀM CHECK ADMIN ---
+    // --- HÀM CHECK ADMIN ---
     async function checkAdmin() {
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
@@ -86,37 +72,79 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // --- 3. HÀM LẤY LỊCH SỬ ---
+    // --- [NÂNG CẤP] HÀM LẤY LỊCH SỬ (CẢ THU VÀ CHI) ---
     async function getHistory() {
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const contract = new ethers.Contract(contractAddress, abi, provider);
-            const filter = contract.filters.DonationReceived();
-            const events = await contract.queryFilter(filter);
             
-            historyBody.innerHTML = "";
-            events.reverse().forEach(event => {
-                const donor = event.args[0];
-                const amount = ethers.formatEther(event.args[1]);
-                const shortDonor = `${donor.substring(0, 6)}...${donor.slice(-4)}`;
-                
-                const row = `<tr>
-                    <td>${shortDonor}</td>
-                    <td style="color: #4CAF50; font-weight:bold;">+${amount} ETH</td>
-                </tr>`;
+            // 1. Lấy danh sách người Donate
+            const filterDonate = contract.filters.DonationReceived();
+            const eventsDonate = await contract.queryFilter(filterDonate);
+
+            // 2. Lấy danh sách Admin rút tiền
+            const filterWithdraw = contract.filters.Withdraw();
+            const eventsWithdraw = await contract.queryFilter(filterWithdraw);
+
+            // 3. Gộp 2 danh sách lại
+            let allEvents = [];
+
+            // Xử lý sự kiện Donate
+            eventsDonate.forEach(event => {
+                allEvents.push({
+                    type: 'donate', // Đánh dấu là Nạp
+                    address: event.args[0],
+                    amount: ethers.formatEther(event.args[1]),
+                    block: event.blockNumber
+                });
+            });
+
+            // Xử lý sự kiện Rút tiền
+            eventsWithdraw.forEach(event => {
+                allEvents.push({
+                    type: 'withdraw', // Đánh dấu là Rút
+                    address: event.args[0],
+                    amount: ethers.formatEther(event.args[1]),
+                    block: event.blockNumber
+                });
+            });
+
+            // 4. Sắp xếp theo thời gian (Block lớn hơn là mới hơn)
+            allEvents.sort((a, b) => b.block - a.block);
+
+            // 5. Hiển thị ra bảng
+            historyBody.innerHTML = ""; 
+            
+            allEvents.forEach(item => {
+                let row = "";
+                const shortAddr = `${item.address.substring(0, 6)}...${item.address.slice(-4)}`;
+
+                if (item.type === 'donate') {
+                    // Dòng màu XANH (Cộng tiền)
+                    row = `<tr>
+                        <td>👤 ${shortAddr}</td>
+                        <td style="color: #2ecc71; font-weight:bold;">+${item.amount} ETH</td>
+                    </tr>`;
+                } else {
+                    // Dòng màu ĐỎ (Trừ tiền)
+                    row = `<tr>
+                        <td>👮‍♂️ <span style="color:red; font-weight:bold;">ADMIN RÚT</span></td>
+                        <td style="color: #e74c3c; font-weight:bold;">-${item.amount} ETH</td>
+                    </tr>`;
+                }
                 historyBody.innerHTML += row;
             });
+            
         } catch (err) {
             console.error("Lỗi tải lịch sử:", err);
             historyBody.innerHTML = "<tr><td colspan='2'>Chưa có dữ liệu</td></tr>";
         }
     }
 
-    // --- 4. DONATE ---
+    // --- DONATE ---
     donateBtn.onclick = async () => {
         const amount = document.getElementById("amount").value;
         if (!currentAccount) return alert("Kết nối ví trước!");
-        
         try {
             status.innerText = "⏳ Đang xử lý...";
             const provider = new ethers.BrowserProvider(window.ethereum);
@@ -126,19 +154,15 @@ window.addEventListener("DOMContentLoaded", async () => {
             const tx = await contract.donate({ value: ethers.parseEther(amount) });
             await tx.wait();
 
-            status.innerText = "🎉 Thành công!";
-            
-            // [MỚI] Cập nhật lại mọi thứ sau khi donate xong
+            status.innerText = "🎉 Donate thành công!";
             await getHistory(); 
             await getFundBalance(); 
-            
         } catch (err) {
-            console.error(err);
             status.innerText = "❌ Lỗi: " + err.message;
         }
     };
 
-    // --- 5. RÚT TIỀN ---
+    // --- RÚT TIỀN ---
     btnWithdraw.onclick = async () => {
         const amount = document.getElementById("withdrawAmount").value;
         try {
@@ -150,15 +174,13 @@ window.addEventListener("DOMContentLoaded", async () => {
             await tx.wait();
             
             alert("Rút tiền thành công!");
-            
-            // [MỚI] Cập nhật lại số dư sau khi rút
+            await getHistory(); // Cập nhật ngay dòng màu đỏ vào bảng
             await getFundBalance();
-            
         } catch (err) {
             alert("Lỗi rút tiền!");
         }
     };
 
-    // Gọi hàm lấy số dư ngay khi trang vừa tải xong (để hiển thị luôn nếu mạng nhanh)
+    // Chạy lần đầu
     getFundBalance();
 });
