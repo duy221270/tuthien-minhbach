@@ -1,0 +1,26 @@
+{
+  "name": "tuthien-minhbach",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duy221270/tuthien-minhbach.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/duy221270/tuthien-minhbach/issues"
+  },
+  "homepage": "https://github.com/duy221270/tuthien-minhbach#readme",
+  "dependencies": {
+    "ethers": "^6.16.0"
+  },
+  "devDependencies": {
+    "hardhat": "^3.0.17"
+  }
+}
